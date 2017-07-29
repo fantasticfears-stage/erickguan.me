@@ -8,7 +8,7 @@ name                     : "Erick Guan"
 description              : "Internet and Technology."
 url                      : "https://erickguan.me"
 baseurl                  :
-repository               : "fantasticfears-stage/fantasticfears.github.io"
+repository               : "fantasticfears-stage/erickguan.me"
 teaser                   : # path of fallback teaser image, e.g. "/assets/images/500x300.png"
 # breadcrumbs            : false # true, false (default)
 words_per_minute         : 200
