@@ -1,0 +1,24 @@
+weibo.com##body .mini_panel_area
+weibo.com###plc_main > .WB_main_r > div:nth-child(n+3)
+weibo.com##.title_area .key
+weibo.com##.gn_nav_list li:nth-child(2)
+weibo.com##.gn_nav_list li:nth-child(3)
+weibo.com##.templete_enter a
+weibo.com##.W_layer_tips_top.W_layer_tips
+weibo.com##.lev_Box_noborder.lev_Box:nth-of-type(5)
+weibo.com##.gn_topmenulist_tips
+weibo.com##.gn_nav_list > li:nth-of-type(4)
+www.56.com##.qf_float.xiu_mm
+www.56.com###wrap > .container > .clearfix.mainplay > .play_side
+www.56.com###sohu_ad
+www.douyutv.com###wrap > .mainbody > .main > .clearfix.column01 > .l > .clearfix.js_live_height.stats_and_actions
+www.douyutv.com###cq_rank_div
+www.douyutv.com##.room_state > li:nth-of-type(3)
+www.douyutv.com###js_room_box > .rn3.r_con
+###ds-notify
+www.bilibili.com##.footer
+www.bilibili.com##.random-p
+i2.hdslb.com/*
+pan.baidu.com##.module-hot-rec
+pan.baidu.com##.header-union
+pan.baidu.com###web-right-view
