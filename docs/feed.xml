@@ -1,0 +1,767 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Blog</title>
+    <description>Internet and Technology.</description>
+    <link>https://erickguan.me/</link>
+    <atom:link href="https://erickguan.me/feed.xml" rel="self" type="application/rss+xml" />
+    
+      <item>
+        <title>Copy and Paste Bookmarklet</title>
+        <description>&lt;p&gt;Inspired by &lt;a href=&quot;https://github.com/jswanner/DontFuckWithPaste&quot;&gt;DontFuckWithPaste&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;But why you ever need an extension taking your 100MB memory when you can have a nice and neat bookmarklet?&lt;/p&gt;
+
+&lt;p&gt;&lt;a style=&quot;padding: 10px; border: 1px dashed #777; background-image: none;&quot; href=&quot;javascript:(function()%7Bconst%20allowCopyAndPaste%20%3D%20(e)%3D%3E%20%7Be.stopImmediatePropagation()%3Breturn%20true%3B%7D%3B%5B'copy'%2C'paste'%5D.forEach(a%20%3D%3E%20%7Bdocument.addEventListener(a%2C%20allowCopyAndPaste%2C%20true)%3B%7D)%7D)()&quot;&gt;&amp;gt; Copy &amp;amp; Paste&lt;/a&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Drag the bookmarklet above into your bookmark bar. If you disable the bookmark bar, right click besides the link bar to get it back.&lt;/li&gt;
+  &lt;li&gt;Click when you need copy and paste.&lt;/li&gt;
+  &lt;li&gt;It’s a fake step. You are done.&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+        <pubDate>Thu, 27 Jul 2017 00:00:00 +0200</pubDate>
+        <link>https://erickguan.me/2017/copy-and-paste-bookmarklet</link>
+        <guid isPermaLink="true">https://erickguan.me/2017/copy-and-paste-bookmarklet</guid>
+      </item>
+    
+      <item>
+        <title>Bridging ICU with Ruby</title>
+        <description>&lt;p&gt;Chinese Discourse users have more complains to the text problems. A community
+software induce users to read and write which certainly deals with texts.
+Numerous efforts are made along the way such as tokenizers for Chinese. Maintaining
+a project is not easy.
+One of feature request for Discourse is Unicode username. A core technical problem
+is visually confusing username. Discourse community may be in a multilingual
+community. This is certainly important to deal with. Although username is the
+core identify of the user representation. It’s more than Unicode.&lt;/p&gt;
+
+&lt;h2 id=&quot;motivation-and-goals&quot;&gt;Motivation and goals&lt;/h2&gt;
+
+&lt;p&gt;Somehow, Ruby community doesn’t have much tools for Unicode processing. Unicode
+normalization is implemented in the core library in 2.2. And what about &lt;a href=&quot;http://unicode.org/reports/tr36/&quot;&gt;Unicode
+security problems&lt;/a&gt;? I don’t want to reinvent the
+wheel.
+&lt;a href=&quot;http://site.icu-project.org/&quot;&gt;ICU (International Components for Unicode)&lt;/a&gt; is an old and battle-tested
+library for the Unicode. A binding with it would worth it. It should have
+high performance, easy to maintain and can be deployed with MRI.&lt;/p&gt;
+
+&lt;p&gt;There are already some gems.&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/twitter/twitter-cldr-rb&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;twitter-cldr-rb&lt;/code&gt; gem&lt;/a&gt; is a pure
+Ruby implementation based on &lt;a href=&quot;http://cldr.unicode.org/&quot;&gt;Unicode CLDR&lt;/a&gt;. Adding
+feature means implementing algorithm on the unicode document.&lt;/li&gt;
+  &lt;li&gt;Some existing gems are obsolete.&lt;/li&gt;
+  &lt;li&gt;The binding with ICU is &lt;a href=&quot;https://bugs.ruby-lang.org/issues/2034&quot;&gt;discussed in MRI tracker&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;do-it-right&quot;&gt;Do it right&lt;/h2&gt;
+
+&lt;p&gt;Ruby is really different than other programing languages in terms of its string
+implementation. &lt;a href=&quot;http://yokolet.blogspot.se/2009/07/design-and-implementation-of-ruby-m17n.html&quot;&gt;The &lt;em&gt;Code Set Independent&lt;/em&gt; (CSI) model&lt;/a&gt;
+doesn’t set a common internal encoding but stores the bytes presentation
+with encoding information. It allows Ruby convert encodings when it involves I/O operations.
+Also, Ruby holds the external encoding &lt;code class=&quot;highlighter-rouge&quot;&gt;Encoding.default_external&lt;/code&gt; which is how Ruby
+reads from an IO object. The &lt;code class=&quot;highlighter-rouge&quot;&gt;IO&lt;/code&gt; object is typically a file (&lt;code class=&quot;highlighter-rouge&quot;&gt;File&lt;/code&gt; is a subclass of IO).
+The &lt;code class=&quot;highlighter-rouge&quot;&gt;Encoding.default_internal&lt;/code&gt; for new created string is usually UTF-8 from the environment.
+&lt;a href=&quot;http://nuclearsquid.com/writings/ruby-1-9-encodings/&quot;&gt;This starts from Ruby 1.9&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;ICU provides &lt;a href=&quot;http://userguide.icu-project.org/i18n&quot;&gt;many internationalization features&lt;/a&gt;. It operates with strings.
+So the most operations happen in memory. But ICU &lt;a href=&quot;http://userguide.icu-project.org/strings&quot;&gt;uses UTF-16 internally&lt;/a&gt;. The conversion will happen if
+UTF-8 is used as the default encoding.&lt;/p&gt;
+
+&lt;p&gt;Also, ICU’s C API uses callback function for error reporting.&lt;/p&gt;
+
+&lt;p&gt;A gem with C code can easily access byte arrays. And the conversion in C will be faster
+than MRI implementation.&lt;/p&gt;
+
+&lt;h2 id=&quot;design&quot;&gt;Design&lt;/h2&gt;
+
+&lt;p&gt;ICU binding should be as transparent as possible. The user only uses the equivalent Ruby
+API of ICU. Its module holds a optional internal encoding for the
+returning result (usually a string). Since ruby’s string can be any encodings, it have
+to be converted to UTF-16 for feeding ICU.&lt;/p&gt;
+
+&lt;p&gt;Along the way, &lt;a href=&quot;https://silverhammermba.github.io/emberb/examples/&quot;&gt;&lt;em&gt;The Definitive Guide to Ruby’s C API&lt;/em&gt;&lt;/a&gt; helps me quite a lot. It’s the most clear reference for Ruby’s C API I’ve seen.&lt;/p&gt;
+
+</description>
+        <pubDate>Tue, 14 Mar 2017 00:00:00 +0100</pubDate>
+        <link>https://erickguan.me/2017/bridging-icu-with-ruby</link>
+        <guid isPermaLink="true">https://erickguan.me/2017/bridging-icu-with-ruby</guid>
+      </item>
+    
+      <item>
+        <title>Unicode is more than encoding</title>
+        <description>&lt;p&gt;Nowadays, the average users don’t have to work with encodings generally and
+don’t need to know Unicode. Better software, better library and better understanding
+contributes a lot. The most basic operations we leant as an programmer is manipulating
+characters and strings. By writing the simplest hello world program in different
+scripts requires understanding encodings or relies on the programing language structure.&lt;/p&gt;
+
+&lt;p&gt;There are some recommend readings:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.codinghorror.com/there-aint-no-such-thing-as-plain-text/&quot;&gt;There Ain’t No Such Thing as Plain Text
+&lt;/a&gt; by
+Coding Horror
+which shows a email and web encoding case in 2005.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.joelonsoftware.com/2003/10/08/the-absolute-minimum-every-software-developer-absolutely-positively-must-know-about-unicode-and-character-sets-no-excuses/&quot;&gt;The Absolute Minimum Every Software Developer Absolutely, Positively Must Know About Unicode and Character Sets (No Excuses!)
+&lt;/a&gt; by Joel Spolsky told the
+Unicode story from the old C char type in 2003.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Unicode&quot;&gt;Unicode on Wikipedia&lt;/a&gt; gives the general
+ideas about it.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://reedbeta.com/blog/programmers-intro-to-unicode/&quot;&gt;A Programmer’s Introduction to Unicode&lt;/a&gt; by Nathan Reed visualizes
+the Unicode code point plans and explains it with encodings and combining marks.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;encodings-is-not-the-unicode&quot;&gt;Encodings is not the Unicode&lt;/h2&gt;
+
+&lt;p&gt;Unicode works on character-level for the world’s writing system. It doesn’t help
+you deal with the language, such as searching Chinese which isn’t separated by
+the blank. But it reveals the relation between the encodings and characters.&lt;/p&gt;
+
+&lt;p&gt;Simply remember:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;There isn’t a string without encoding.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;If you ever forgot that or not understood, you won’t know why a same string
+can’t be the same in the byte array.&lt;/p&gt;
+
+&lt;p&gt;Many programing languages make use of UTF-x encoding now. It isn’t the whole
+story. Ruby uses &lt;em&gt;Code Set Independent&lt;/em&gt; system for storing strings which basically
+stores the encoding with the string. While most programming language mainly uses a
+UTF-x to represent the string which is already encoded. The most scary thing
+happens as the string may comes from a database, a JSON from HTTP response,
+writing to a file and
+your javascript literals. Now the string involves with I/O and I/O operates on
+byte level. It must related with the encoding. Being arrogant and ignore the
+fact that libraries, the operating system and your programing language handles
+the encoding in a way, it will eventually bite you.&lt;/p&gt;
+
+&lt;h2 id=&quot;unicode-regulates-more-than-code-points&quot;&gt;Unicode regulates more than code points&lt;/h2&gt;
+
+&lt;p&gt;A common programming is comparing the string. This problem has
+two aspects, one is with encoding above explained. The other is Unicode standard.
+Unicode intends to represent character in the writing system. A single code point can
+be represented by a series of code points. The abstract layers in the software
+also wants to make it easy for the programmers. So now it’s time to remind you
+for another thing.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;For example, the Vietnamese letter “ệ” can be expressed in five different ways:&lt;/p&gt;
+  &lt;ul&gt;
+    &lt;li&gt;Fully precomposed: U+1EC7 “ệ”&lt;/li&gt;
+    &lt;li&gt;Partially precomposed: U+1EB9 “ẹ” + U+0302 “◌̂”&lt;/li&gt;
+    &lt;li&gt;Partially precomposed: U+00EA “ê” + U+0323 “◌̣”&lt;/li&gt;
+    &lt;li&gt;Fully decomposed: U+0065 “e” + U+0323 “◌̣” + U+0302 “◌̂”&lt;/li&gt;
+    &lt;li&gt;Fully decomposed: U+0065 “e” + U+0302 “◌̂” + U+0323 “◌̣”&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;– &lt;em&gt;A Programmer’s Introduction to Unicode&lt;/em&gt;, Nathan Reed&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;A character have different representation even with the same encoding.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;I won’t elaborate more. Here is some further directions to read.&lt;/p&gt;
+
+&lt;p&gt;Unicode website offers many readings for the problem and intention. And ICU
+has a C/C++/Java implementation for these problems.&lt;/p&gt;
+
+</description>
+        <pubDate>Mon, 13 Mar 2017 00:00:00 +0100</pubDate>
+        <link>https://erickguan.me/2017/unicode-what-changes</link>
+        <guid isPermaLink="true">https://erickguan.me/2017/unicode-what-changes</guid>
+      </item>
+    
+      <item>
+        <title>Hooray, Webhooks</title>
+        <description>&lt;p&gt;Webhooks are “user-defined HTTP callbacks” &lt;a href=&quot;http://progrium.com/blog/2007/05/03/web-hooks-to-revolutionize-the-web/&quot;&gt;brought by Jeff Lindsay&lt;/a&gt;. While it’s &lt;a href=&quot;http://timothyfitz.com/2009/02/09/what-webhooks-are-and-why-you-should-care/&quot;&gt;augmented&lt;/a&gt; for some time, it comes to my sight because of continuous integration like Travis CI at GitHub. Later, Slack made it fancy as every services could pop up messages in the channel as if I was in Enterprise bridge:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/USS_Enterprise_(alternate_reality)_bridge.jpg&quot; alt=&quot;Enterprise bridge&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;It’s also interesting to discover how it can be implemented on Ruby on Rails.&lt;/p&gt;
+
+&lt;h2 id=&quot;case-study-webhooks-at-github-and-slack&quot;&gt;Case Study: Webhooks at GitHub and Slack&lt;/h2&gt;
+
+&lt;p&gt;Since GitHub and Slack build great webhooks, it’s a good practice to see how they build the service.&lt;/p&gt;
+
+&lt;h3 id=&quot;github&quot;&gt;GitHub&lt;/h3&gt;
+
+&lt;p&gt;GitHub runs central repositories for git and origination services. It offers &lt;a href=&quot;https://developer.github.com/webhooks/&quot;&gt;webhooks&lt;/a&gt; on organization level and repositories level where user can manage webhooks in the admin panel. GitHub allow users to create “up to 20 webhooks for each event on each installation target”. has an &lt;a href=&quot;https://github.com/integrations&quot;&gt;Integrations Directory&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Events are triggered on certain scenario: (highlight)&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;*&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;Any time any event is triggered. &lt;a href=&quot;#wildcard-event&quot;&gt;Wildcard Event&lt;/a&gt; overwrites other events.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;/v3/activity/events/types/#commitcommentevent&quot;&gt;&lt;code&gt;commit_comment&lt;/code&gt;&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Any time a Commit is commented on.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;a href=&quot;/v3/activity/events/types/#pushevent&quot;&gt;&lt;code&gt;push&lt;/code&gt;&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;Any Git push to a Repository. &lt;strong&gt;default event.&lt;/strong&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;Illustrated in adding webhook page on the admin panel:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/github-add-webhooks.png&quot; alt=&quot;Adding webhooks at GitHub&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;With pre-set configuration, GitHub is responsible for sending payload (JSON) based on &lt;a href=&quot;https://developer.github.com/v3/activity/events/types/&quot;&gt;event type&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;However, the payload size will be small than 5MB, otherwise, it will be discarded. It’s user’s responsibility to monitor payload size.&lt;/p&gt;
+
+&lt;p&gt;A HTTP header of webhooks includes event name, unique ID and signature by HMAC hex digest of the payload which uses hook’s secret as a key if secret is set.&lt;/p&gt;
+
+&lt;p&gt;GitHub build a great API. Webhook can be managed by its API. For testing reason, GitHub provides a &lt;a href=&quot;https://developer.github.com/webhooks/#ping-event&quot;&gt;Ping event to test a hook&lt;/a&gt;, &lt;a href=&quot;https://developer.github.com/v3/repos/hooks/#test-a-push-hook&quot;&gt;hook’s test endpoint&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Service hooks are defined sets of webhooks by the &lt;a href=&quot;https://github.com/github/github-services&quot;&gt;third party at github-services repo&lt;/a&gt;. However, GitHub no longer accepts new service instead of urging new integration service to build OAuth application help managing webhooks. Be noted, GitHub integrations directory is different than services. It’s just a directory to help redirecting to third party services who manage webhooks.&lt;/p&gt;
+
+&lt;h4 id=&quot;pubsubhubbub&quot;&gt;PubSubHubbub&lt;/h4&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/pubsubhubbub/PubSubHubbub&quot;&gt;This crazy name (PubSubHubbub)&lt;/a&gt; belongs to an open protocol for distributed publish/subscribe communication on the Internet. Their &lt;a href=&quot;http://pubsubhubbub.github.io/PubSubHubbub/pubsubhubbub-core-0.4.html&quot;&gt;specification&lt;/a&gt; defines a decoupled flow for webhooks.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://wordpress.org/plugins/pubsubhubbub/&quot;&gt;A Wordpress plugin&lt;/a&gt; helps you announce new blog post. And GitHub can &lt;a href=&quot;https://developer.github.com/v3/repos/hooks/#pubsubhubbub&quot;&gt;serve as a PubSubHubbub hub&lt;/a&gt; for all repositories.&lt;/p&gt;
+
+&lt;p&gt;It’s designed to &lt;a href=&quot;https://github.com/pubsubhubbub/PubSubHubbub/wiki/Why-Polling-Sucks&quot;&gt;overcome polling for getting feed updates&lt;/a&gt;. GitHub will create a webhook if you request the hub.&lt;/p&gt;
+
+&lt;h3 id=&quot;slack&quot;&gt;Slack&lt;/h3&gt;
+
+&lt;p&gt;Slack builds the fancy messaging app for teams. Many integrations and bots are just favorable.&lt;/p&gt;
+
+&lt;p&gt;Basically, Slack offers incoming and outgoing webhooks. Slash commands is built on these two webhooks.&lt;/p&gt;
+
+&lt;p&gt;In terms of &lt;a href=&quot;https://api.slack.com/incoming-webhooks&quot;&gt;incoming webhooks&lt;/a&gt;, sending a JSON payload and plain text to a hashed url would trigger a message with defined name and icon. Simple as that.
+&lt;a href=&quot;https://api.slack.com/outgoing-webhooks&quot;&gt;Outgoing webhooks&lt;/a&gt; come with receiving payload of messages. A payload will be sent when triggered by keywords or a new message on the channel. The integrated services can reply back if they want.&lt;/p&gt;
+
+&lt;p&gt;As an extension of outgoing webhooks, slash commands send payload to server and reply messages back to the channel. However, bots are separated from other webhooks. They build upon &lt;a href=&quot;https://api.slack.com/web&quot;&gt;Slack API&lt;/a&gt; and &lt;a href=&quot;https://api.slack.com/rtm&quot;&gt;realtime API&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;considerations&quot;&gt;Considerations&lt;/h2&gt;
+
+&lt;p&gt;Webhooks are highly application-specific. Event payloads would be transported in secure (HTTPS) or plaintext (Don’t care) manner according to the content. Therefore, signature (symmetric key) or a token can be used as a way to authentication. For ambitious applications, they offers a way to package webhooks as a service to minimize the deployment cost of webhooks.&lt;/p&gt;
+
+</description>
+        <pubDate>Mon, 14 Mar 2016 00:00:00 +0100</pubDate>
+        <link>https://erickguan.me/2016/hooray-webhooks</link>
+        <guid isPermaLink="true">https://erickguan.me/2016/hooray-webhooks</guid>
+      </item>
+    
+      <item>
+        <title>Ensuring the file uploaded by Refile</title>
+        <description>&lt;p&gt;&lt;a href=&quot;https://github.com/refile/refile&quot;&gt;Refile&lt;/a&gt; is an neat and simple file upload library for Ruby applications. It can be easily to integrated into Rails app. Be advised, I am on its git version &lt;code class=&quot;highlighter-rouge&quot;&gt;6a25a24059&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Recently, I ran into trouble to validate the file exists or uploaded. I went through the AR layer, the model is &lt;a href=&quot;https://github.com/refile/refile/blob/6a25a24059/lib/refile/attachment/active_record.rb#L24-L26&quot;&gt;set at &lt;code class=&quot;highlighter-rouge&quot;&gt;before_save&lt;/code&gt; hook&lt;/a&gt;. There is no way to check the file is uploaded.&lt;/p&gt;
+
+&lt;p&gt;Thanks to its simple abstraction, &lt;code class=&quot;highlighter-rouge&quot;&gt;attacher&lt;/code&gt; will &lt;a href=&quot;https://github.com/refile/refile/blob/6a25a24059/lib/refile/attachment/active_record.rb#L12-L15&quot;&gt;present&lt;/a&gt; when the file is uploaded.&lt;/p&gt;
+
+&lt;p&gt;Then the final resolution is straightforward. For example:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class UserValidator &amp;lt; ActiveModel::Validator
+  def validate(record)
+    unless record.send(:avatar).present?
+      attacher = &quot;avatar_attacher&quot;
+
+      record.errors.add(:avatar, :blank, options) unless record.send(attacher).present?
+	end
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Only if the file is uploaded, the attcher will &lt;a href=&quot;https://github.com/refile/refile/blob/6a25a24059/lib/refile/attacher.rb#L150-L152&quot;&gt;be present&lt;/a&gt;.&lt;/p&gt;
+</description>
+        <pubDate>Thu, 19 Mar 2015 00:00:00 +0100</pubDate>
+        <link>https://erickguan.me/2015/ensure-the-file-uploaded-by-refile</link>
+        <guid isPermaLink="true">https://erickguan.me/2015/ensure-the-file-uploaded-by-refile</guid>
+      </item>
+    
+      <item>
+        <title>Binding ACE editor with Rails form helper</title>
+        <description>&lt;p&gt;ACE editor only can bind with a &lt;code class=&quot;highlighter-rouge&quot;&gt;div&lt;/code&gt; container which means rails form helper can’t help when you want to bind with an attribute.
+I am going to work through my solution.&lt;/p&gt;
+
+&lt;h3 id=&quot;text_area&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;text_area&lt;/code&gt;&lt;/h3&gt;
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;text_area&lt;/code&gt; genererates &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;textarea&amp;gt;&lt;/code&gt; which people can edit its content without any js. And this helper helps you forget about binding with model.&lt;/p&gt;
+
+&lt;p&gt;I will get the content from it for ACE. When the js can’t work, we can still get a functional editor.&lt;/p&gt;
+
+&lt;h3 id=&quot;binding-with-ace&quot;&gt;Binding with ACE&lt;/h3&gt;
+
+&lt;p&gt;HTML:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-HTML&quot;&gt;&amp;lt;div class=&quot;source-editor&quot; data-mode=&quot;markdown&quot;&amp;gt;
+  &amp;lt;textarea&amp;gt;&amp;lt;/textarea&amp;gt;
+&amp;lt;/div&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Script is easy. Work though all the &lt;code class=&quot;highlighter-rouge&quot;&gt;source-editor&lt;/code&gt;, create a div and bind ACE within it. Then save back to textarea when submit.&lt;/p&gt;
+
+&lt;p&gt;You should set css for &lt;code class=&quot;highlighter-rouge&quot;&gt;textarea&lt;/code&gt; just like the  &lt;code class=&quot;highlighter-rouge&quot;&gt;div&lt;/code&gt; in the ACE tutorial.&lt;/p&gt;
+&lt;div class=&quot;language-js highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'.source-editor'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;each&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;container&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;mode&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;container&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'mode'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;editorArea&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;container&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;find&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'textarea'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+  &lt;span class=&quot;c1&quot;&gt;// build a edit div for ACE since ACE can't load in a textarea&lt;/span&gt;
+  &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;editDiv&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'&amp;lt;div&amp;gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;position&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'absolute'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;editorArea&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;editorArea&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt;
+      &lt;span class=&quot;s1&quot;&gt;'class'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;editorArea&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;attr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'class'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;insertBefore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;editorArea&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;c1&quot;&gt;// no need to display textarea&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;editorArea&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;css&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'display'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'none'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+  &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;editor&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;ace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;edit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;editDiv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]);&lt;/span&gt;
+
+  &lt;span class=&quot;nx&quot;&gt;editor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;setFontSize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'14px'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;editor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;setTheme&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'ace/theme/yesterday'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;editor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getSession&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;setMode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'ace/mode/'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;mode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;editor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getSession&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;setValue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;editorArea&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;val&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt;
+
+  &lt;span class=&quot;c1&quot;&gt;// save back to the textarea when submit&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;editorArea&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;closest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'form'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;submit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;editorArea&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;val&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;editor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getSession&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;getValue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;more-complicated-templates&quot;&gt;More complicated templates&lt;/h3&gt;
+
+&lt;p&gt;Actually I forged Github-liked toolbar for the ACE editor which needs more HTML structures.&lt;/p&gt;
+
+&lt;p&gt;This can be done by Rails view partials. Separated HTML and passing form helper as a parameter. Then write its control logic in the component js.
+No need for customized helpers, simple is the best.&lt;/p&gt;
+
+&lt;div class=&quot;language-haml highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;render&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;partial: &lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'components/source_editor'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;se&quot;&gt; |
+&lt;/span&gt;  &lt;span class=&quot;ss&quot;&gt;locals: &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;                                   &lt;span class=&quot;se&quot;&gt; |
+&lt;/span&gt;  &lt;span class=&quot;ss&quot;&gt;preview_url: &lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;''&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;                            &lt;span class=&quot;se&quot;&gt; |
+&lt;/span&gt;  &lt;span class=&quot;ss&quot;&gt;ace_mode: &lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'markdown'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;                       &lt;span class=&quot;se&quot;&gt; |
+&lt;/span&gt;  &lt;span class=&quot;ss&quot;&gt;indent_width: &lt;/span&gt;&lt;span class=&quot;sx&quot;&gt;%w(2 4 8)&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;                    &lt;span class=&quot;se&quot;&gt; |
+&lt;/span&gt;  &lt;span class=&quot;ss&quot;&gt;tab_label: &lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'Edit content'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;                  &lt;span class=&quot;se&quot;&gt; |
+&lt;/span&gt;  &lt;span class=&quot;ss&quot;&gt;preview_label: &lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'Preview'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;                   &lt;span class=&quot;se&quot;&gt; |
+&lt;/span&gt;  &lt;span class=&quot;ss&quot;&gt;attribute: &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;text_area&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;ss&quot;&gt;:raw&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;              &lt;span class=&quot;se&quot;&gt; |
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+</description>
+        <pubDate>Tue, 23 Dec 2014 00:00:00 +0100</pubDate>
+        <link>https://erickguan.me/2014/binding-ace-editor-with-rails-from-helper</link>
+        <guid isPermaLink="true">https://erickguan.me/2014/binding-ace-editor-with-rails-from-helper</guid>
+      </item>
+    
+      <item>
+        <title>Bundle install without VPN in China</title>
+        <description>&lt;p&gt;EDIT: Recommended mirror site updated in the end.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://rubygems.org&quot;&gt;RubyGems&lt;/a&gt; got blocked by GFW which blocks everytime you do &lt;code class=&quot;highlighter-rouge&quot;&gt;bundle install&lt;/code&gt;. It’s because some of Amazon S3 are blocked by gov.&lt;/p&gt;
+
+&lt;p&gt;In the mainland China, we can just use mirror provided by Taobao. It’s fast. It sync with RubyGems every fifteen minutes.&lt;/p&gt;
+
+&lt;p&gt;The mirror &lt;a href=&quot;https://ruby.taobao.org&quot;&gt;ruby.taobao.org&lt;/a&gt; has a detail usage guide. Here I want to demonstrate how to use it as a mirror instead of gem source.&lt;/p&gt;
+
+&lt;h2 id=&quot;mirror&quot;&gt;Mirror&lt;/h2&gt;
+
+&lt;p&gt;Sometime you’ll find you can’t remove rubygems source or change &lt;code class=&quot;highlighter-rouge&quot;&gt;Gemfile&lt;/code&gt;. What you can do is to simply add a mirror for bundler.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;bundle config mirror.https://rubygems.org https://ruby.taobao.org&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;You can find Bundler mirror documentation &lt;a href=&quot;http://bundler.io/v1.7/bundle_config.html&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;updated-mirror&quot;&gt;Updated mirror&lt;/h2&gt;
+
+&lt;p&gt;Taobao mirror has troubles becaus of security policies that only employees can access servers which is needed for maintenance work at Taobao. Core maintainers left Taobao recent years which cause all kinds of troubles.&lt;/p&gt;
+
+&lt;p&gt;Therefore, a new mirror is considered to operate separately under control of serveral core members at &lt;a href=&quot;https://ruby-china.org/&quot;&gt;Ruby China&lt;/a&gt;. QCloud will sponsor servers and CDN from Tencent. It’s going to offer “realtime” synchronization, 400+ global CDNs and two servers operated outside China which ensures CDN server can query the data.&lt;/p&gt;
+
+&lt;p&gt;Here is some related links (in Chinese of course):&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Issues: &lt;a href=&quot;https://ruby-china.org/topics/29250&quot;&gt;https://ruby-china.org/topics/29250&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Github: &lt;a href=&quot;https://github.com/ruby-china/rubygems-mirror&quot;&gt;https://github.com/ruby-china/rubygems-mirror&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Mirror site: &lt;a href=&quot;http://gems.ruby-china.org/&quot;&gt;http://gems.ruby-china.org/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;commands&quot;&gt;Commands&lt;/h3&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;gem sources --add https://gems.ruby-china.org/ --remove https://rubygems.org/&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;bundle config mirror.https://rubygems.org https://gems.ruby-china.org&lt;/code&gt;&lt;/p&gt;
+</description>
+        <pubDate>Sun, 14 Sep 2014 00:00:00 +0200</pubDate>
+        <link>https://erickguan.me/2014/bundle-install-without-vpn-in-china</link>
+        <guid isPermaLink="true">https://erickguan.me/2014/bundle-install-without-vpn-in-china</guid>
+      </item>
+    
+      <item>
+        <title>Adding a system call to Linux 3.14</title>
+        <description>&lt;p&gt;There are plenty of blog posts about adding a system call to Linux 2.6, but they are out of date now. Here is a article about adding a system call to Linux 3.14. I assume you can easily add the system call for further kernel. Shane wrote a &lt;a href=&quot;https://shanetully.com/2014/04/adding-a-syscall-to-linux-3-14/&quot;&gt;great post&lt;/a&gt; about it.&lt;/p&gt;
+
+&lt;h2 id=&quot;system-call&quot;&gt;System call&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;System call&lt;/strong&gt; is how a user space application request a service from an operating system. Many libraries, even C standard library, are an wrapper with additional functions.&lt;/p&gt;
+
+&lt;h2 id=&quot;environment&quot;&gt;Environment&lt;/h2&gt;
+
+&lt;p&gt;Gentoo Linux(amd64): aufs-sources:3.14.5&lt;/p&gt;
+
+&lt;p&gt;If you are not a Gentoo user, you can get the kernel source from your package manager and &lt;a href=&quot;http://kernel.org/&quot;&gt;The Linux Kernel&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;adding-a-system-call&quot;&gt;Adding a system call&lt;/h2&gt;
+
+&lt;p&gt;A system call is defined in the system call entry table, a system call function prototype and actual implementation for the system call.&lt;/p&gt;
+
+&lt;h3 id=&quot;syscall-table&quot;&gt;syscall table&lt;/h3&gt;
+
+&lt;p&gt;The syscall table is located in the &lt;code class=&quot;highlighter-rouge&quot;&gt;arch/x86/syscalls/syscall_64.tbl&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h4 id=&quot;format&quot;&gt;Format&lt;/h4&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;numver&amp;gt; &amp;lt;abi&amp;gt; &amp;lt;name&amp;gt; &amp;lt;entry point&amp;gt;&lt;/code&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;number&lt;/code&gt;: All syscalls are identified by a unique number. In order to call a syscall, we tell the kernel to call the syscall by its number rather than by its name.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;abi&lt;/code&gt;: The ABI, or application binary interface, to use. Either 64, x32, or common for both.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;name&lt;/code&gt;: This is simply the name of the syscall.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;entry point&lt;/code&gt;: The entry point is the name of the function to call in order to handle the syscall. The naming convention for this function is the name of the syscall prefixed with &lt;code class=&quot;highlighter-rouge&quot;&gt;sys_&lt;/code&gt;. For example, the &lt;code class=&quot;highlighter-rouge&quot;&gt;read&lt;/code&gt; syscall’s entry point is &lt;code class=&quot;highlighter-rouge&quot;&gt;sys_read&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;how-to&quot;&gt;How-to&lt;/h4&gt;
+
+&lt;p&gt;Skipping the table, you’ll find a series of x86 system calls starting with 512. I’ll add the system call in the end after table right above that part.&lt;/p&gt;
+
+&lt;p&gt;For 3.14, the last system call is &lt;code class=&quot;highlighter-rouge&quot;&gt;315 common  sched_getattr       sys_sched_getattr&lt;/code&gt;. So I add the new one as 316. It look like this:
+&lt;code class=&quot;highlighter-rouge&quot;&gt;316 common  set_root            sys_set_root&lt;/code&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;system-call-function-prototype&quot;&gt;System call function prototype&lt;/h3&gt;
+
+&lt;p&gt;We need to define the function prototype in the &lt;code class=&quot;highlighter-rouge&quot;&gt;include/linux/syscalls.h&lt;/code&gt; file.&lt;/p&gt;
+
+&lt;p&gt;Simply adding a line: &lt;code class=&quot;highlighter-rouge&quot;&gt;asmlinkage long sys_set_root(void);&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;We’ll add a system call takes no argument.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;asmlinkage&lt;/code&gt; is a modifier. This macro tells the compiler that the function should not expect to find any of its arguments in registers (a common optimization), but only on the CPU’s stack. You can find more in &lt;a href=&quot;http://kernelnewbies.org/FAQ/asmlinkage&quot;&gt;FAQ&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;system-call-implementation&quot;&gt;System call implementation&lt;/h3&gt;
+
+&lt;p&gt;Now, just create a new file &lt;code class=&quot;highlighter-rouge&quot;&gt;kernel/set_root.c&lt;/code&gt;. Kernel style guild requires 8 space tab for indentation. But I will insist 4 space here.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#include &amp;lt;linux/kernel.h&amp;gt;
+#include &amp;lt;linux/init.h&amp;gt;
+#include &amp;lt;linux/sched.h&amp;gt;
+#include &amp;lt;linux/syscalls.h&amp;gt;
+
+asmlinkage long sys_set_root(void)
+{
+    struct user_namespace *ns = current_user_ns();
+    struct cred *new;
+
+    kuid_t kuid = make_kuid(ns, 0);
+    kgid_t kgid = make_kgid(ns, 0);
+
+    if (!uid_valid(kuid)) {
+        return -EINVAL;
+    }
+
+    new = prepare_creds();
+
+    if (new != NULL) {
+        new-&amp;gt;uid = kuid;
+        new-&amp;gt;gid = kgid;
+
+        new-&amp;gt;euid = kuid;
+        new-&amp;gt;egid = kgid;
+
+        new-&amp;gt;suid = kuid;
+        new-&amp;gt;sgid = kgid;
+
+        new--&amp;gt;fsuid = kuid;
+        new-&amp;gt;fsgid = kgid;
+
+        return commit_creds(new);
+    } else {
+        abort_creds(new);
+        return -ENOMEM;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The code set the user program as root unconditionally. DO NOT USE THIS KERNEL after the experiment, or you’re in trouble.&lt;/p&gt;
+
+&lt;h3 id=&quot;adding-our-implementation-to-makefile&quot;&gt;Adding our implementation to Makefile&lt;/h3&gt;
+
+&lt;p&gt;Adding &lt;code class=&quot;highlighter-rouge&quot;&gt;set_root.o&lt;/code&gt; to the end of &lt;code class=&quot;highlighter-rouge&quot;&gt;obj-y&lt;/code&gt; line in the &lt;code class=&quot;highlighter-rouge&quot;&gt;kernel/Makefile&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;patch-about-the-kernel&quot;&gt;Patch about the kernel&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;gh&quot;&gt;diff --git a/arch/x86/syscalls/syscall_64.tbl b/arch/x86/syscalls/syscall_64.tbl
+index a12bddc..413209b 100644
+&lt;/span&gt;&lt;span class=&quot;gd&quot;&gt;--- a/arch/x86/syscalls/syscall_64.tbl
+&lt;/span&gt;&lt;span class=&quot;gi&quot;&gt;+++ b/arch/x86/syscalls/syscall_64.tbl
+&lt;/span&gt;&lt;span class=&quot;gu&quot;&gt;@@ -322,6 +322,7 @@
+&lt;/span&gt;313    common  finit_module            sys_finit_module
+314    common  sched_setattr           sys_sched_setattr
+315    common  sched_getattr           sys_sched_getattr
+&lt;span class=&quot;gi&quot;&gt;+316 common  set_root            sys_set_root
+&lt;/span&gt;
+#
+# x32-specific system call numbers    start at 512 to avoid cache impact
+&lt;span class=&quot;gh&quot;&gt;diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index a747a77..c9f7c3c 100644
+&lt;/span&gt;&lt;span class=&quot;gd&quot;&gt;--- a/include/linux/syscalls.h
+&lt;/span&gt;&lt;span class=&quot;gi&quot;&gt;+++ b/include/linux/syscalls.h
+&lt;/span&gt;&lt;span class=&quot;gu&quot;&gt;@@ -855,4 +855,6 @@ asmlinkage long sys_process_vm_writev(pid_t pid,
+&lt;/span&gt;asmlinkage long sys_kcmp(pid_t pid1, pid_t pid2, int type,
+                        unsigned long idx1, unsigned long idx2);
+asmlinkage long sys_finit_module(int fd, const char __user *uargs, int flags);
+&lt;span class=&quot;gi&quot;&gt;+asmlinkage long sys_set_root(void);
++
+&lt;/span&gt;#endif
+&lt;span class=&quot;gh&quot;&gt;diff --git a/kernel/Makefile b/kernel/Makefile
+index bc010ee..def272b 100644
+&lt;/span&gt;&lt;span class=&quot;gd&quot;&gt;--- a/kernel/Makefile
+&lt;/span&gt;&lt;span class=&quot;gi&quot;&gt;+++ b/kernel/Makefile
+&lt;/span&gt;&lt;span class=&quot;gu&quot;&gt;@@ -10,7 +10,7 @@ obj-y     = fork.o exec_domain.o panic.o
+&lt;/span&gt;            kthread.o sys_ni.o posix-cpu-timers.o
+            hrtimer.o nsproxy.o
+            notifier.o ksysfs.o cred.o reboot.o
+&lt;span class=&quot;gd&quot;&gt;-           async.o range.o groups.o smpboot.o
+&lt;/span&gt;&lt;span class=&quot;gi&quot;&gt;+           async.o range.o groups.o smpboot.o set_root.o
+&lt;/span&gt;
+ifdef CONFIG_FUNCTION_TRACER
+# Do not trace debug files and internal ftrace files
+&lt;span class=&quot;gh&quot;&gt;diff --git a/kernel/set_root.c b/kernel/set_root.c
+&lt;/span&gt;new file mode 100644
+&lt;span class=&quot;gh&quot;&gt;index 0000000..97fab9b
+&lt;/span&gt;&lt;span class=&quot;gd&quot;&gt;--- /dev/null
+&lt;/span&gt;&lt;span class=&quot;gi&quot;&gt;+++ b/kernel/set_root.c
+&lt;/span&gt;&lt;span class=&quot;gu&quot;&gt;@@ -0,0 +1,38 @@
+&lt;/span&gt;&lt;span class=&quot;gi&quot;&gt;+#include &amp;lt;linux/kernel.h&amp;gt;
++#include &amp;lt;linux/init.h&amp;gt;
++#include &amp;lt;linux/sched.h&amp;gt;
++#include &amp;lt;linux/syscalls.h&amp;gt;
++
++asmlinkage long sys_set_root(void)
++{
++    struct user_namespace *ns = current_user_ns();
++    struct cred *new;
++
++    kuid_t kuid = make_kuid(ns, 0);
++    kgid_t kgid = make_kgid(ns, 0);
++
++    if (!uid_valid(kuid)) {
++        return -EINVAL;
++    }
++
++    new = prepare_creds();
++
++    if (new != NULL) {
++        new-&amp;gt;uid = kuid;
++        new-&amp;gt;gid = kgid;
++
++        new-&amp;gt;euid = kuid;
++        new-&amp;gt;egid = kgid;
++
++        new-&amp;gt;suid = kuid;
++        new-&amp;gt;sgid = kgid;
++
++        new-&amp;gt;fsuid = kuid;
++        new-&amp;gt;fsgid = kgid;
++
++        return commit_creds(new);
++    } else {
++        abort_creds(new);
++        return -ENOMEM;
++    }
++}
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;testing-by-invoking-system-call-in-a-c-program&quot;&gt;Testing by invoking system call in a C program&lt;/h2&gt;
+
+&lt;p&gt;You may want to know &lt;a href=&quot;http://www.tldp.org/LDP/khg/HyperNews/get/syscall/syscall86.html&quot;&gt;how system call works&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;But here is only the code according to GNU whoami. The standard library provide the system call wrapper.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;unistd.h&amp;gt;
+#include &amp;lt;sys/types.h&amp;gt;
+#include &amp;lt;pwd.h&amp;gt;
+#include &amp;lt;string.h&amp;gt;
+#include &amp;lt;errno.h&amp;gt;
+
+#define SYS_SET_ROOT 316
+
+void whoami(void);
+
+int main()
+{
+    whoami();
+
+    if (syscall(SYS_SET_ROOT) == -1) {
+        fprintf(stderr, &quot;Error calling syscall: %s\n&quot;, strerror(errno));
+        return 1;
+    }
+
+    whoami();
+
+    return 0;
+}
+
+void whoami()
+{
+    // Code modified from GNU whoami source
+    // http://git.savannah.gnu.org/gitweb/?p=coreutils.git;a=blob;f=src/whoami.c;h=7301abb146418e36785801ff57a3946068b69fc5;hb=HEAD
+    uid_t uid = geteuid();
+    struct passwd *pw = getpwuid(uid);
+
+    if (pw != NULL) {
+        puts(pw-&amp;gt;pw_name);
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+</description>
+        <pubDate>Wed, 10 Sep 2014 00:00:00 +0200</pubDate>
+        <link>https://erickguan.me/2014/add-a-system-call-to-linux-3-14</link>
+        <guid isPermaLink="true">https://erickguan.me/2014/add-a-system-call-to-linux-3-14</guid>
+      </item>
+    
+      <item>
+        <title>Failed Attempt to Chinese Speech Recognition Service</title>
+        <description>&lt;p&gt;It’s obvious that many application supports speech recognition for sentences. Actually, everywhere.&lt;/p&gt;
+
+&lt;p&gt;But here I want is to convert a Chinese podcast, &lt;a href=&quot;http://teahour.fm/&quot;&gt;Teahour.fm&lt;/a&gt;, to text for read. It’s about 80 minutes per podcast. There is no silver bullet here. Even the text can be automated converted, it’s still need to be make it readable for human, editor work.&lt;/p&gt;
+
+&lt;h2 id=&quot;speech-recognition-service-for-chinese&quot;&gt;Speech Recognition Service for Chinese&lt;/h2&gt;
+
+&lt;p&gt;I got 3 choices.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/gillesdemey/google-speech-v2&quot;&gt;Unpublished Google Speech API&lt;/a&gt;, it’s used for Android and Google services.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://open.voicecloud.cn/index.php/default/index&quot;&gt;Xunfei&lt;/a&gt;. Local company, leading Chinese speech recognition. It provides many SDK. But the document is shit and no support for OS X.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://cmusphinx.sourceforge.net/&quot;&gt;CMU Sphinx4&lt;/a&gt;. I can find some article about PocketSphinx. Not enough to me to understand the how it works and its API. I beg for documents and examples. I tried it, but ended it with its IndexOutOfBoundsException. Come on, you can’t be serious…&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Actually, I found more service for speech recognition service. But it’s used for sentence. And for mobile app…&lt;/p&gt;
+
+&lt;h2 id=&quot;final-choice&quot;&gt;Final choice&lt;/h2&gt;
+
+&lt;p&gt;I came back to Google Speech API. The limitation is you can’t POST big audio file, nor long audio. So I wrote the Ruby script to slice the podcast into 5 seconds piece. And the results is not good.
+I can’t&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;slice the audio at the correct point, e.g. one sentence for one request. &lt;em&gt;Exploring Everyday Things with R and Ruby&lt;/em&gt; may include some interesting way to slice the audio.&lt;/li&gt;
+  &lt;li&gt;and Google Speech API is not good enough to know Chinese. You just got meaningless word combinations.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;script&quot;&gt;Script&lt;/h2&gt;
+
+&lt;p&gt;Anyway, here is the script. FFmpeg is to slice the audio to 5 seconds pieces. A offset was added to randomly choose the point.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;require 'curb'
+require 'multi_json'
+
+# Config
+file_name = 'teahour.m4a'
+start_time = 0
+end_time = 4990
+duration = 5
+offset = 3
+output_name = 'output.flac'
+result_name = 'result.txt'
+
+# result file
+result_file = File.new(result_name, 'w')
+
+# Curl
+google_speech_api_url = 'https://www.google.com/speech-api/v2/recognize?output=json&amp;amp;amp;lang=zh-cn&amp;amp;amp;key=AIzaSyCnl6MRydhw_5fLXIdASxkLJzcJh5iX0M4'
+curl = Curl::Easy.new(google_speech_api_url)
+curl.headers['Content-Type'] = 'audio/x-flac; rate=32000'
+
+(start_time..end_time).step(duration) do |n|
+  (0..offset).step(1) do |o|
+    # ffmpeg
+    command = 'ffmpeg -y -i ' + file_name + ' -f flac -ss ' + (n + o).to_s +
+          ' -t ' + duration.to_s + ' ' + output_name
+    system command
+
+    # preapre for request
+    data = File.read(output_name)
+    curl.post_body = data
+    begin
+      curl.http_post
+    rescue
+      next
+    end
+
+    # parse the result, assumption exist
+    json = MultiJson.load(curl.body, symbolize_keys: true)
+    result = begin
+      json[:result][0][:alternative][0][:transcript]
+    rescue
+      ''
+    end
+    result_file.puts(result)
+  end
+end
+
+result_file.close
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+</description>
+        <pubDate>Sun, 25 May 2014 00:00:00 +0200</pubDate>
+        <link>https://erickguan.me/2014/failed-attempt-to-chinese-speech-recognition-service</link>
+        <guid isPermaLink="true">https://erickguan.me/2014/failed-attempt-to-chinese-speech-recognition-service</guid>
+      </item>
+    
+      <item>
+        <title>Mechanize encoding problem with GBK</title>
+        <description>&lt;p&gt;I tried to use Mechanize for fetching data in a restricted site, but response html with GBK encoding is overwhelm me.&lt;/p&gt;
+
+&lt;p&gt;Since Mechanize can store the cookie and detect encoding, it seems I can save a lot of time to fetch data. But I ran into encoding problem soon. I reinstall the ruby with readline(OS X 10.9.2) and set the LC.&lt;/p&gt;
+
+&lt;p&gt;For a page, I’ll normally try this way.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;require 'mechanize'
+
+agent = Mechanize.new
+page = agent.get TARGET_URL
+page.search('//table') # do everything you like
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;But I just got random character. When I check about that, it seems Mechanize consider its ‘EUC-JP’. So I think I should manually set the encoding. Here is final version which can parse the content.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;require 'mechanize'
+
+agent = Mechanize.new
+page = agent.get TARGET_URL
+page.encoding = 'GBK'
+converter = Encoding::Converter.new('GBK', 'UTF-8') # Ruby 2.1
+content = converter.convert(page.body)
+document = Nokogiri::HTML(content) # Or your still can't search the right     content without using the encoded content.
+document.search('//table')
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+</description>
+        <pubDate>Sat, 10 May 2014 00:00:00 +0200</pubDate>
+        <link>https://erickguan.me/2014/mechanize-encoding-problem-with-gbk</link>
+        <guid isPermaLink="true">https://erickguan.me/2014/mechanize-encoding-problem-with-gbk</guid>
+      </item>
+    
+  </channel>
+</rss>
