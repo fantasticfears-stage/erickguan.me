@@ -14,7 +14,7 @@ script:
   - git add -f _site/
   - git commit -a -m "Deploy"
   - git checkout gh-pages
-  - git checkout deploy _site/**
+  - git checkout deploy "_site/**"
   - rsync -av _site/ .
-  - rm -rf _site
-  - git add . && git commit -a -m "Deploy ${CIRCLE_BUILD_NUM}" && git push origin gh-pages --force --quiet "https://${GITHUB_USERNAME}:${GITHUB_PASSWORD}@${GIT_TARGET}" master:master > /dev/null 2>&1
+  - rm -rf _site && rm -rf _* && rm -rf .sass-cache
+  - git add . && git commit -a -m "Deploy at ${date -R}" && git push origin gh-pages --force --quiet "https://${GITHUB_USERNAME}:${GITHUB_PASSWORD}@${GIT_TARGET}" master:master > /dev/null 2>&1
