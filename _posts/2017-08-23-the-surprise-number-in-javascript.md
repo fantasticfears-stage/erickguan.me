@@ -33,18 +33,21 @@ That's why you don't trust the input and the reason you remember to check.
 Number.isSafeInteger(2**53) // false
 ```
 
-Chrome represents integer more than ECMAScript required because its implementation details in V8.
+Chrome can represent a integer more than ECMAScript required. That is unique for Chrome
+. You are not allowed to rely on such undefined behaviour by its implementation V8 engine.
+It's not portable and error prone.
 
 If you read the great MDN, you'll find:
 
 > According to the ECMAScript standard, there is only one number type: the double-precision 64-bit binary format IEEE 754 value (number between $$-(2^{53}-1)$$ and $$2^{53}-1$$). There is no specific type for integers. In addition to being able to represent floating-point numbers, the number type has three symbolic values: +Infinity, -Infinity, and NaN (not-a-number).
 
-You are not using Python, C/C++ or Ruby. There isn't a type for integer in JavaScript.
+You are not using Python, C/C++ or Ruby but JavaScript. There isn't a type for integer in JavaScript.
 Your integer at your hand
-is just a `Number` in JavaScript. JavaScript is weak in typing opposing to other
-dynamic language in which allows you to represent infinite large number.
+is just a `Number` in JavaScript. JavaScript is weak in its type system opposing to other
+dynamic languages in which allow you to represent the infinite large number.
 
-The standard says that it's a IEEE 754 value.
+The ECMAScript standard says the number representation limits to the IEEE 754 value.
+The standard defined that there isn't a integer type so it's a tangible mistake to do it.
 
 If you use Python and Ruby, you pay the price when you use large number which probably you rarely make use of. So does the copy on right (CoW) in string to C++. But you are benifit to know
 such information. It indicates you optimize for the right direction.
