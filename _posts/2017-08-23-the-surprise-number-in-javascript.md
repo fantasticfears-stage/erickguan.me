@@ -18,9 +18,11 @@ Let's take a step back and review what is a number. Is $$2^{53}$$ a number in Ja
 Number.isInteger(2**53) // true
 ```
 
-It works out right. So what's the matter?
+It works out right. But can there be potential issues?
 
-It's not _safe_. It's not safe because the number you hold may lose its percision if it's larger.
+Yes, it's not _safe_.
+It's not safe because the number you hold
+may lose its percision if it's larger than the magical $$2^{53}$$.
 
 Your user may complain they lose their money when they type a large number.
 `9007199254740992`. You may lose your rocket in the sky because its position goes wrong.
