@@ -1,5 +1,6 @@
 ---
 title: The Surprising Number in JavaScript
+math: true
 tags:
   - Programming Language
 ---
