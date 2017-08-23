@@ -8,7 +8,7 @@ Did you know you can not have a number larger than $$ 2^{53}-1 $$ in JavaScript?
 
 You might try this in Chrome Developer Console and want to tell me that it works in  Chrome.
 
-It works because you get lucky.
+It works because you are lucky.
 
 ## What is a Number?
 
