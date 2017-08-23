@@ -6,7 +6,7 @@ tags:
 
 Webhooks are "user-defined HTTP callbacks" [brought by Jeff Lindsay][ow]. While it's [augmented][au] for some time, it comes to my sight because of continuous integration like Travis CI at GitHub. Later, Slack made it fancy as every services could pop up messages in the channel as if I was in Enterprise bridge:
 
-![Enterprise bridge](/assets/images/USS_Enterprise_(alternate_reality)_bridge.jpg)
+![Enterprise bridge](/assets/images/old/USS_Enterprise_(alternate_reality)_bridge.jpg)
 
 It's also interesting to discover how it can be implemented on Ruby on Rails.
 
@@ -33,11 +33,11 @@ Events are triggered on certain scenario: (highlight)
 <td>Any time any event is triggered. <a href="#wildcard-event">Wildcard Event</a> overwrites other events.</td>
 </tr>
 <tr>
-<td><a href="/v3/activity/events/types/#commitcommentevent"><code>commit_comment</code></a></td>
+<td><code>commit_comment</code></td>
 <td>Any time a Commit is commented on.</td>
 </tr>
 <tr>
-<td><a href="/v3/activity/events/types/#pushevent"><code>push</code></a></td>
+<td><code>push</code></td>
 <td>Any Git push to a Repository. <strong>default event.</strong>
 </td>
 </tr>
