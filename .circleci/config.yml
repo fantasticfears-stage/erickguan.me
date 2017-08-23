@@ -10,18 +10,19 @@ jobs:
 
       - restore_cache:
           keys:
-          - v4-dependencies-{{ checksum "Gemfile.lock" }}
-          - v4-dependencies-
+          - v6-dependencies-{{ checksum "Gemfile.lock" }}
+          - v6-dependencies-
 
       - run:
           name: install dependencies
           command: |
-            bundle install --jobs=4 --retry=3 --path vendor/bundle
+            bundle install --jobs=4 --retry=3
 
       - save_cache:
           paths:
-            - ./vendor/bundle 
-          key: v4-dependencies-{{ checksum "Gemfile.lock" }}
+            - ~/.gem/gems 
+            - ~/.rvm/gems
+          key: v6-dependencies-{{ checksum "Gemfile.lock" }}
       
       - run: bundle exec jekyll build -d _site
 
@@ -35,6 +36,12 @@ jobs:
             git commit -a -m "Deploy"
             git checkout gh-pages
             git checkout deploy _site/**
-            cp -r _site/ .
+            mkdir /tmp/artifacts
+            rsync -av _site/ . > /tmp/artifacts/${CIRCLE_BUILD_NUM}.txt
             rm -rf _site
             git add . && git commit -a -m "Deploy ${CIRCLE_BUILD_NUM}" && git push origin gh-pages
+      
+      - store_site_directory:
+        name: Store site directory
+        type: store_test_results
+        path: /tmp/artifacts
