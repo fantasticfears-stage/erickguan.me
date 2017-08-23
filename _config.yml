@@ -42,6 +42,8 @@ staticman:
 atom_feed:
   path                   : # blank (default) uses feed.xml
 github: [metadata]
+exclude: [vendor]
+
 
 # SEO Related
 google_site_verification :
