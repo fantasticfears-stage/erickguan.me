@@ -7,6 +7,111 @@
     <atom:link href="https://erickguan.me/feed.xml" rel="self" type="application/rss+xml" />
     
       <item>
+        <title>The Surprising Number in JavaScript</title>
+        <description>&lt;p&gt;Did you know you can not have a number larger than 2^53-1 in JavaScript?&lt;/p&gt;
+
+&lt;p&gt;You might try this in Chrome and yell at me that it’s OK for Chrome.&lt;/p&gt;
+
+&lt;h2 id=&quot;what-is-a-number&quot;&gt;What is a Number?&lt;/h2&gt;
+
+&lt;p&gt;Let’s take a step back and reflect what is a number. Is 2^53 a number in JavaScript?&lt;/p&gt;
+
+&lt;div class=&quot;language-js highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;Number&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;isInteger&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;53&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// true&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;So what’s the matter? Because it’s not &lt;em&gt;safe&lt;/em&gt;.&lt;/p&gt;
+
+&lt;div class=&quot;language-js highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;Number&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;isSafeInteger&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;53&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// false&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Chrome represents more than that because its implementation details in V8.&lt;/p&gt;
+
+&lt;p&gt;If you read great MDN, you’ll find:&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;According to the ECMAScript standard, there is only one number type: the double-precision 64-bit binary format IEEE 754 value (number between -(253 -1) and 253 -1). There is no specific type for integers. In addition to being able to represent floating-point numbers, the number type has three symbolic values: +Infinity, -Infinity, and NaN (not-a-number).&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;You are not use Python, C/C++ or Ruby. There isn’t a type for integer. The integer
+is just a &lt;code class=&quot;highlighter-rouge&quot;&gt;Number&lt;/code&gt; in JavaScript. JavaScript is weak in typing opposing to other
+dynamic language that they allow you to represent infinite large number you can.
+It simply says IEEE 754.&lt;/p&gt;
+
+&lt;p&gt;If you use Python and Ruby, you pay the price when you use large number but it’s
+rare to happen just like copy on right (CoW) in C++. But you are benifit to know
+this is a integer because they often has a type (class) for it.&lt;/p&gt;
+
+&lt;p&gt;Besides, you have &lt;code class=&quot;highlighter-rouge&quot;&gt;+Infinity&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;-Infinity&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;NaN&lt;/code&gt; and our famous equality table along with the &lt;code class=&quot;highlighter-rouge&quot;&gt;Number&lt;/code&gt; object.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/2017/js-equality-table.png&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;grown-design&quot;&gt;Grown? Design?&lt;/h3&gt;
+
+&lt;p&gt;Why is that?&lt;/p&gt;
+
+&lt;p&gt;JavaScript starts as a prototype project and designed by one person in 1993.&lt;/p&gt;
+
+&lt;p&gt;It’s the browser war time. So there is 
+Netscape (former Mozilla), Microsoft and hackers (KHTML &amp;amp; WebKit). Brendan Eich was recruited and
+assigned the task to design the language with the the goal of embedding Scheme.
+With the collaboration with Sun, it should looks like Java to compete with Microsoft.
+The desiner at the time was Brendan Eich. He invented the
+prototype in 10 days, in May 1995.&lt;/p&gt;
+
+&lt;h4 id=&quot;a-story-from-make&quot;&gt;A story from make&lt;/h4&gt;
+
+&lt;p&gt;Let’s have some perspecitve. It’s 1995. Web is little to be known. People talks about Java, C++, Unix, internet, HTML and etc. Not like right now. You have a
+internet community and your lovely package manager like npm and bundler.&lt;/p&gt;
+
+&lt;p&gt;I’m about to get the point but let’s talk about &lt;code class=&quot;highlighter-rouge&quot;&gt;make&lt;/code&gt;.
+Do you know what we still suffer in making a C/C++ project? Because we
+still uses Makefile. &lt;code class=&quot;highlighter-rouge&quot;&gt;make&lt;/code&gt; was a program that written by one person and intended
+to be shared with friends. He went on ahead and starts command with tab. And 
+tab is treat different than spaces. It’s a fine choice at the time and it’s not a 
+bad idea to include it into the standard UNIX package, right?&lt;/p&gt;
+
+&lt;p&gt;So wrong. We suffer because of those ten guys.&lt;/p&gt;
+
+&lt;p&gt;It’s grown not designed.&lt;/p&gt;
+
+&lt;h4 id=&quot;javascript&quot;&gt;JavaScript&lt;/h4&gt;
+
+&lt;p&gt;Douglas Crockford, the creator of JSON said,&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;JavaScript is built on some very good ideas and a few very bad ones.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Imagine even a committe of experts in programming language can deliver obscure syntax.
+Could you blame JavaScript for a 10 day one man project?&lt;/p&gt;
+
+&lt;p&gt;But why we suffer from this? Python 3 designs the language again and make a huge
+price for its community. But how JavaScript can’t change at all.&lt;/p&gt;
+
+&lt;p&gt;Because you don’t have a choice. It’s bundled with the browser and there were 2
+browser wars in the history. You live in an aftermath with the survival. Chrome
+shows the power of programming in user browser and we can never goes back.&lt;/p&gt;
+
+&lt;p&gt;That simply because JavaScript is grown.&lt;/p&gt;
+
+&lt;h2 id=&quot;its-terrible-the-take-away&quot;&gt;It’s terrible? The take away&lt;/h2&gt;
+
+&lt;p&gt;LOOK at how it’s successful as a language. It’s universal now.
+We all know there is no perfect language. So it is.
+JavaScript can be really surprised
+in types. But don’t you happy with the first-class functions? closures? object literals? And speed?&lt;/p&gt;
+
+&lt;p&gt;As a programmer, don’t you have your linter if you committed the very same mistakes?
+Just do more coding.&lt;/p&gt;
+</description>
+        <pubDate>Wed, 23 Aug 2017 00:00:00 +0200</pubDate>
+        <link>https://erickguan.me/2017/the-surprise-number-in-javascript</link>
+        <guid isPermaLink="true">https://erickguan.me/2017/the-surprise-number-in-javascript</guid>
+      </item>
+    
+      <item>
         <title>Copy and Paste Bookmarklet</title>
         <description>&lt;p&gt;Inspired by &lt;a href=&quot;https://github.com/jswanner/DontFuckWithPaste&quot;&gt;DontFuckWithPaste&lt;/a&gt;.&lt;/p&gt;
 
@@ -726,41 +831,6 @@ result_file.close
         <pubDate>Sun, 25 May 2014 00:00:00 +0200</pubDate>
         <link>https://erickguan.me/2014/failed-attempt-to-chinese-speech-recognition-service</link>
         <guid isPermaLink="true">https://erickguan.me/2014/failed-attempt-to-chinese-speech-recognition-service</guid>
-      </item>
-    
-      <item>
-        <title>Mechanize encoding problem with GBK</title>
-        <description>&lt;p&gt;I tried to use Mechanize for fetching data in a restricted site, but response html with GBK encoding is overwhelm me.&lt;/p&gt;
-
-&lt;p&gt;Since Mechanize can store the cookie and detect encoding, it seems I can save a lot of time to fetch data. But I ran into encoding problem soon. I reinstall the ruby with readline(OS X 10.9.2) and set the LC.&lt;/p&gt;
-
-&lt;p&gt;For a page, I’ll normally try this way.&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;require 'mechanize'
-
-agent = Mechanize.new
-page = agent.get TARGET_URL
-page.search('//table') # do everything you like
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;But I just got random character. When I check about that, it seems Mechanize consider its ‘EUC-JP’. So I think I should manually set the encoding. Here is final version which can parse the content.&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;require 'mechanize'
-
-agent = Mechanize.new
-page = agent.get TARGET_URL
-page.encoding = 'GBK'
-converter = Encoding::Converter.new('GBK', 'UTF-8') # Ruby 2.1
-content = converter.convert(page.body)
-document = Nokogiri::HTML(content) # Or your still can't search the right     content without using the encoded content.
-document.search('//table')
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-</description>
-        <pubDate>Sat, 10 May 2014 00:00:00 +0200</pubDate>
-        <link>https://erickguan.me/2014/mechanize-encoding-problem-with-gbk</link>
-        <guid isPermaLink="true">https://erickguan.me/2014/mechanize-encoding-problem-with-gbk</guid>
       </item>
     
   </channel>
