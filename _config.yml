@@ -9,7 +9,7 @@ description              : "Internet and Technology."
 url                      : "https://erickguan.me"
 baseurl                  :
 repository               : "fantasticfears-stage/erickguan.me"
-teaser                   : "/assets/teaser.jpg"
+teaser                   : "/assets/images/teaser.jpg"
 # breadcrumbs            : false # true, false (default)
 words_per_minute         : 200
 comments:
