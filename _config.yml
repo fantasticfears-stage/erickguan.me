@@ -7,7 +7,7 @@ title_separator          : "-"
 name                     : "Erick Guan"
 description              : "Internet and Technology."
 url                      : "https://erickguan.me"
-baseurl                  : "/"
+baseurl                  : ""
 repository               : "fantasticfears-stage/erickguan.me"
 teaser                   : "/assets/images/teaser.jpg"
 # breadcrumbs            : false # true, false (default)
