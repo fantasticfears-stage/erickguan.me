@@ -8,7 +8,7 @@ header:
 tags:
   - Psychology
   - Development
-last_modified_at: 2018-11-19 00:21:12
+last_modified_at: 2018-11-19T23:28:44+01:00
 ---
 
 Internet profoundly changes human life. I read magazine when I was a kid. It says "Everything at your fingertip". This refers to Internet. It finally becomes truth however terrifying reality.
