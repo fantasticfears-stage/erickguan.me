@@ -8,7 +8,6 @@ header:
 tags:
   - Python
   - Programing language
-last_modified_at: 2018-11-11T11:09:51+01:00
 ---
 
 When a PyTorch DataLoader repeat its data? Why it's so magical and impossible to see in its code. It is implemented as an iterator in Python. Pythonic but implicit.
