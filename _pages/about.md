@@ -6,6 +6,8 @@ permalink: /about/
 A CS student studying in Mid Sweden University, at Sundsvall, Sweden. I'm from
 Sanming, China.
 
+I become a human being in the first decade of my life.
+
 In free time, I contribute to Discourse and OSS coding.
 I love to build things, video games, sports and make new friends. And I enjoy cultural differences.
 
