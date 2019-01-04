@@ -1,5 +1,5 @@
 ---
-title: How to be your data science lab in 13 steps? 
+title: How to have a data science lab in 13 steps? 
 header:
   image: /assets/images/2018/antenna-503044-unsplash-1400.jpg
   og_image: /assets/images/2018/antenna-503044-unsplash-200.jpg
