@@ -9,9 +9,11 @@ tags:
   - PyTorch
   - Python
   - Programming
+classes: wide
+toc: true
 ---
 
-PyTorch can send batches and models to different GPUs automatically with `DataParallel(model)`. How is it possible? I assume you know PyTorch uses dynamic computational graph. 
+PyTorch can send batches and models to different GPUs automatically with `DataParallel(model)`. How is it possible? I assume you know PyTorch uses dynamic computational graph.
 
 This is a complicated question and I asked on the PyTorch forum. I got [a reply](https://discuss.pytorch.org/t/how-pytorchs-parallel-method-and-distributed-method-works/30349/2?u=fantasticfears) from [Sebastian Raschka](https://discuss.pytorch.org/u/rasbt).
 
@@ -133,7 +135,7 @@ PyObject *THPFunction_apply(PyObject *cls, PyObject *inputs)
 
   // Record input nodes if tracing
   // ...
-  
+
   // Initialize backward function (and ctx)
   bool is_executable = input_info.is_executable;
   ctx->cdata.set_next_edges(std::move(input_info.next_edges));
@@ -164,7 +166,7 @@ PyObject *THPFunction_apply(PyObject *cls, PyObject *inputs)
 
 From here, we know that the `cls.apply` invokes `cls.forward` and prepares information for `cls.backward`. `cls.apply` takes its own class information and all parameters from Python. And those parameters will be applied on `cls.forward`. Noticabily, `ctx` object can carry the information to backward pass.
 
-Now we can explore how  `DataParallel` works. 
+Now we can explore how  `DataParallel` works.
 
 ## Step 1 and Step 2: split minibatch on GPU:0 and move to GPU
 
@@ -238,7 +240,7 @@ std::vector<at::Tensor> scatter(
 }
 ```
 
-As a matter of fact, tensor would be split which is done by `at::narrow` in the end. Since the operation only happens to strides and sizes, the memory is reused! PyTorch takes zero copy seriously at every level. But an important insight is that tensor is splitted regardless of its shape. You need to align different input tensors by its total size instead of a particular dimension. 
+As a matter of fact, tensor would be split which is done by `at::narrow` in the end. Since the operation only happens to strides and sizes, the memory is reused! PyTorch takes zero copy seriously at every level. But an important insight is that tensor is splitted regardless of its shape. You need to align different input tensors by its total size instead of a particular dimension.
 
 ## Step 3: copy models to GPU
 
@@ -429,7 +431,7 @@ def parallel_apply(modules, inputs, kwargs_tup=None, devices=None):
 
 Python’s threading library is used to send things to models on different GPUs. This is a little bit expensive than I thought because of the overhead from threading.
 
-# Step 5: Compute
+## Step 5: Compute
 
 The `gather` has a similiar design as `scatter`. The core is `Gather.apply(target_device, dim, *outputs)`.  And its core is `comm.gather(inputs, ctx.dim, ctx.target_device)`.
 

@@ -42,7 +42,6 @@ staticman:
 atom_feed:
   path                   : # blank (default) uses feed.xml
 github: [metadata]
-exclude: [vendor]
 
 
 # SEO Related
@@ -136,6 +135,9 @@ exclude:
   - tmp
   - /docs # ignore Minimal Mistakes /docs
   - /test # ignore Minimal Mistakes /test
+  - yulib.config
+  - yulib.resource
+  - vendor
 keep_files:
   - .git
   - .svn
