@@ -13,7 +13,7 @@ classes: wide
 toc: true
 ---
 
-PyTorch can send batches and models to different GPUs automatically with `DataParallel(model)`. How is it possible? I assume you know PyTorch uses dynamic computational graph.
+PyTorch can send batches and models to different GPUs automatically with `DataParallel(model)`. How is it possible? I assume you know PyTorch uses dynamic computational graph. And PyTorch version is v1.0.1.
 
 This is a complicated question and I asked on the PyTorch forum. I got [a reply](https://discuss.pytorch.org/t/how-pytorchs-parallel-method-and-distributed-method-works/30349/2?u=fantasticfears) from [Sebastian Raschka](https://discuss.pytorch.org/u/rasbt).
 
