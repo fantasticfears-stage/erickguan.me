@@ -16,5 +16,3 @@ I use PGP to ensure privacy and sign documents. [My PGP key](https://pgp.mit.edu
 I was a Gentoo user and love to build my system.
 
 I also like to read books about political, civilization, art and finance.
-
-My deepest love to the computer, humanity and people. Born architect and strategist. 
