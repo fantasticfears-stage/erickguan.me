@@ -3,10 +3,8 @@ version: 2.1
 workflows:
   tests:
     jobs:
-      - build:
-        filters:
-          branches:
-            only: post
+      - build
+      - test
 
 orbs:
   ruby: circleci/ruby@1.8.0
@@ -21,5 +19,13 @@ jobs:
     steps:
       - checkout
       - ruby/install-deps # use the ruby orb to install dependencies
+      
+  test:
+    docker:
+      - image: cimg/ruby:3.1
+        auth:
+          username: fantasticfears
+          password: $DOCKERHUB_PASSWORD
+    steps:
       - run: bundle exec jekyll build
       - run: bundle exec htmlproofer ./_site --check-html --disable-external
