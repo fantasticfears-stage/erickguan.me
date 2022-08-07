@@ -21,7 +21,5 @@ jobs:
     steps:
       - checkout
       - ruby/install-deps # use the ruby orb to install dependencies
-      - run:
-        command: bundle exec jekyll build
-      - run:
-        command: bundle exec htmlproofer ./_site --check-html --disable-external
+      - run: bundle exec jekyll build
+      - run: bundle exec htmlproofer ./_site --check-html --disable-external
