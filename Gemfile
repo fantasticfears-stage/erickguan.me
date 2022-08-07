@@ -14,10 +14,10 @@ group :jekyll_plugins do
   gem "jekyll-include-cache"
   gem 'jekyll-archives'
   gem "jemoji"
-
 end
 
 gem "minimal-mistakes-jekyll"
+gem "htmlproofer"
 
 group :development do
   gem "rake"
