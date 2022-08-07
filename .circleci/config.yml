@@ -3,10 +3,7 @@ version: 2.1
 workflows:
   tests:
     jobs:
-      - build:
-        filters:
-          branches:
-            only: post
+      - build
 
 orbs:
   ruby: circleci/ruby@1.8.0
