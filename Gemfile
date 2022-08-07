@@ -18,3 +18,9 @@ group :jekyll_plugins do
 end
 
 gem "minimal-mistakes-jekyll"
+
+group :development do
+  gem "rake"
+  gem "faraday-retry"
+  gem "webrick"
+end
