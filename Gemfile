@@ -17,7 +17,7 @@ group :jekyll_plugins do
 end
 
 gem "minimal-mistakes-jekyll"
-gem "htmlproofer"
+gem "html-proofer"
 
 group :development do
   gem "rake"
