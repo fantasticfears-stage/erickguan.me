@@ -17,10 +17,9 @@ jobs:
       - uses: limjh16/jekyll-action-ts@v2
         with:
           enable_cache: true
-          format_output: true
       - name: 🚀 deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
+          publish_dir: docs
           publish_branch: master
