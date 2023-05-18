@@ -14,8 +14,13 @@ jobs:
         with:
           ruby-version: '3.1'
           bundler-cache: true
-      - uses: helaili/jekyll-action@2.5.0
+      - uses: limjh16/jekyll-action-ts@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          target_branch: master
-          target_path: docs
+          enable_cache: true
+          format_output: true
+      - name: 🚀 deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          publish_branch: master
