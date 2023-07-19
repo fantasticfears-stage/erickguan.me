@@ -76,8 +76,8 @@ analytics:
 author:
   name             : "Erick Guan"
   avatar           : "/assets/images/bio-photo.jpg"
-  bio              : "Software engineer, a life time learner."
-  location         : "Sundsvall, Sweden"
+  bio              : "Software engineer"
+  location         : "Stockholm, Sweden"
   email            :
   uri              :
   bitbucket        :
@@ -86,13 +86,13 @@ author:
   flickr           :
   facebook         :
   foursquare       :
-  github           : "fantasticfears"
+  github           : "erickguan"
   gitlab           :
   google_plus      :
   keybase          :
   instagram        :
   lastfm           :
-  linkedin         : "fantasticfears"
+  linkedin         : "erickguan"
   pinterest        :
   soundcloud       :
   stackoverflow    : "1612428/fantasticfears"
