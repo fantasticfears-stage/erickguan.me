@@ -6,7 +6,7 @@ tags:
 
 Webhooks are "user-defined HTTP callbacks" [brought by Jeff Lindsay][ow]. While it's [augmented][au] for some time, it comes to my sight because of continuous integration like Travis CI at GitHub. Later, Slack made it fancy as every services could pop up messages in the channel as if I was in Enterprise bridge:
 
-![Enterprise bridge](/assets/images/old/USS_Enterprise_(alternate_reality)_bridge.jpg)
+![Enterprise bridge](/assets/images/2016/USS_Enterprise_(alternate_reality)_bridge.jpg)
 
 It's also interesting to discover how it can be implemented on Ruby on Rails.
 
@@ -46,7 +46,7 @@ Events are triggered on certain scenario: (highlight)
 
 Illustrated in adding webhook page on the admin panel:
 
-![Adding webhooks at GitHub](/assets/images/github-add-webhooks.png)
+![Adding webhooks at GitHub](/assets/images/2016/github-add-webhooks.png)
 
 With pre-set configuration, GitHub is responsible for sending payload (JSON) based on [event type](https://developer.github.com/v3/activity/events/types/).
 
