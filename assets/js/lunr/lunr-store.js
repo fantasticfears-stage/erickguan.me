@@ -118,4 +118,10 @@ var store = [{
         "tags": ["Runtime"],
         "url": "/2023/wasm-jvm-informal-peek",
         "teaser": "/assets/images/2023/garett-mizunaka-unsplash-640.jpg"
+      },{
+        "title": "Latency values for programmers in 2024",
+        "excerpt":"Latency values are important for modern software. A program usually waits for I/O, another thread to complete a task, or a network request to complete. In a system, a database lock will create contention for other database connections. A global interpreter lock will force other threads to wait. These are...","categories": [],
+        "tags": ["Latency"],
+        "url": "/2024/latency-values",
+        "teaser": "/assets/images/2024/ales-krivec-time-640.jpg"
       }]
