@@ -1,5 +1,5 @@
 ---
-title: Linux Kernel 6.12
+title: Long-term feature patches merged to Linux Kernel 6.12
 header:
   image: /assets/images/2024/nathan-anderson-hardware-1920.jpg
   og_image: /assets/images/2024/nathan-anderson-hardware-640.jpg
@@ -9,9 +9,9 @@ tags:
   - Latency
 ---
 
-Linux has optimized performance in multiple systems. I have read many about IO_uring and BPF.
+Some of feature developments can really take time. Linux 6.12 has certainly a lot of them. Apart from many feature updates, performance optimization, several technology are part of the mainline kernel. This reminds me of that technology improves because people work hard to build it. I really apperciate how OSS comes together. Back to the topic, there are a few exciting new features.
 
-Linux 6.12 Scheduler Code Adds SCHED_DEADLINE Servers & Complete EEVDF
+## Linux 6.12 Scheduler Code Adds SCHED_DEADLINE Servers & Complete EEVDF
 
 What is EEVDF https://lwn.net/Articles/925371/
 
