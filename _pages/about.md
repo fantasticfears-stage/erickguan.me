@@ -3,16 +3,15 @@ title: About
 permalink: /about/
 ---
 
-A CS student studying in Mid Sweden University, at Sundsvall, Sweden. I'm from
-Sanming, China.
+Tech Lead | Software Architect | Open‑Source Advocate
 
-In free time, I contribute to Discourse and OSS coding.
-I love to build things, video games, sports and make new friends. And I enjoy cultural differences.
+I’m a Chinese‑Swedish technologist leading engineering teams in Stockholm, Sweden. Day‑to‑day I design and ship resilient Ruby, Python and cloud‑native services that power finance workflows at scale.
 
-I support [Chinese Discourse community](https://meta.discoursecn.org)
-by plugins, guides, translations and answers.
+## ️🏗 What I do
+- Architect scalable platforms and mentor cross‑functional teams to deliver reliably
+- Drive clean code practices, CI/CD automation and data‑driven decision‑making
+- Lead integrations with modern toolchains, from Kubernetes to event‑streaming
 
-I use PGP to ensure privacy and sign documents. [My PGP key](https://pgp.mit.edu/pks/lookup?op=get&search=0x10075E9E76407351) 76407351
-I was a Gentoo user and love to build my system.
+## 🚀 Let’s connect
 
-I also like to read books about political, civilization, art and finance.
+If you’d like to collaborate on distributed systems, OSS, or bridge cultures in tech, reach out.
