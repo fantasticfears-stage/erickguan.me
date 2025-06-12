@@ -1,4 +1,4 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
 # A simple Ruby Gem to bootstrap dependencies for setting up and
 # maintaining a local Jekyll environment in sync with GitHub Pages
@@ -9,8 +9,7 @@ gem "jekyll", "~> 4.4"
 gem "jekyll-sitemap"
 gem "jekyll-gist"
 gem "jekyll-feed"
-gem "jekyll-include-cache"
-gem 'jekyll-archives'
+gem "jekyll-archives"
 gem "jemoji"
 gem "jekyll-include-cache"
 
@@ -20,4 +19,5 @@ gem "html-proofer"
 group :development do
   gem "rake"
   gem "faraday-retry"
+  gem "standard"
 end
