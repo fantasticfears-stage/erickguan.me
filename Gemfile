@@ -4,17 +4,15 @@ source 'https://rubygems.org'
 # maintaining a local Jekyll environment in sync with GitHub Pages
 # https://github.com/github/pages-gem
 
-gem "github-pages", group: :jekyll_plugins
-
-group :jekyll_plugins do
-  gem "jekyll-paginate"
-  gem "jekyll-sitemap"
-  gem "jekyll-gist"
-  gem "jekyll-feed"
-  gem "jekyll-include-cache"
-  gem 'jekyll-archives'
-  gem "jemoji"
-end
+# Jekyll static site builder
+gem "jekyll", "~> 4.4"
+gem "jekyll-sitemap"
+gem "jekyll-gist"
+gem "jekyll-feed"
+gem "jekyll-include-cache"
+gem 'jekyll-archives'
+gem "jemoji"
+gem "jekyll-include-cache"
 
 gem "minimal-mistakes-jekyll"
 gem "html-proofer"
@@ -22,5 +20,4 @@ gem "html-proofer"
 group :development do
   gem "rake"
   gem "faraday-retry"
-  gem "webrick"
 end
