@@ -1,0 +1,23 @@
+extends: default            # start from the standard rule-set
+
+rules:
+  line-length:              # 1 ⟶ allow lines up to 120 characters
+    max: 120
+    # level: warning        # uncomment if you prefer a warning instead of an error
+
+  colons:                   # 2 ⟶ remove the “0-space-before-colon” restriction
+    max-spaces-before: -1   # −1 disables the limit (∞ spaces allowed)
+    # max-spaces-after: 1   # leave default (one space after “:”), adjust if needed
+
+  # -------------------------
+  # GitHub Actions exceptions
+  # -------------------------
+  document-start:         # Actions files rarely begin with '---'
+    present: yes          # keep enforcing it elsewhere
+    ignore: |             # …but skip all workflow files
+      /.github/workflows/*.yml
+
+  truthy:                 # ‘on: push’ & friends look “truthy” to yamllint
+    check-keys: false     # stop inspecting _keys_ like “on”
+    ignore: |
+      /.github/workflows/*.yml
