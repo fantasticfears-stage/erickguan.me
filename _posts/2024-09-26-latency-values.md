@@ -4,7 +4,7 @@ header:
   image: /assets/images/2024/ales-krivec-time-1920.jpg
   og_image: /assets/images/2024/ales-krivec-time-640.jpg
   teaser: /assets/images/2024/ales-krivec-time-640.jpg
-  caption: Photo by [Ales Krivec]https://unsplash.com/photos/turned-on-gray-alarm-clock-displaying-1011-ZMZHcvIVgbg).
+  caption: Photo by [Ales Krivec](https://unsplash.com/photos/turned-on-gray-alarm-clock-displaying-1011-ZMZHcvIVgbg).
 tags:
   - Latency
 
