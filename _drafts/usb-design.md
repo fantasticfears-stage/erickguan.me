@@ -1,3 +1,8 @@
+---
+title: USB
+header:
+tags:
+---
 
 From system design perspective, USB does not change much. A USB system consists of a host with one or more ports, peripherals, up to 5 tiered hubs. They follow a tiered-star topology to connect together. A host might have muliple host controllers which support 127 devices by one or more ports. USB devices are linked through hubs. The host controller embeds a root hub. A USB device can be a simple device or a composite device which consists of several logical sub-devices. Or a USB device can be a so called compound device. The host assigns distinct address and all logical devices to a built-in hub that connects to a physical cable.
 
